@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from sklearn.model_selection import train_test_split
 import librosa
 import matplotlib.pyplot as plt
@@ -32,19 +32,44 @@ def create_model(input_shape, num_classes):
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
         MaxPooling2D((2, 2)),
+        Dropout(0.25),
         Conv2D(64, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
+        Dropout(0.25),
         Conv2D(128, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
+        Dropout(0.25),
         Flatten(),
         Dense(128, activation='relu'),
+        Dropout(0.5),
         Dense(num_classes, activation='softmax')
     ])
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
+def plot_history(history):
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    epochs = range(len(acc))
+
+    plt.figure(figsize=(12, 6))
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, acc, label='Training Accuracy')
+    plt.plot(epochs, val_acc, label='Validation Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, loss, label='Training Loss')
+    plt.plot(epochs, val_loss, label='Validation Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.show()
+
 def main():
-    data_dir = 'data/alphabet_sounds'  # Read Readme.md for setup or just make the folder a and put audio file inside it should in data/alphabet_sounds/{name}/{somethingcool}.wav
+    data_dir = 'data/alphabet_sounds'
     data, labels = load_data(data_dir)
     data = data / 255.0
 
@@ -55,8 +80,12 @@ def main():
 
     model = create_model(input_shape, num_classes)
 
-    model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))
-    model.save('alphabet_model.h5')
+    callbacks = [
+        tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_accuracy', mode='max')
+    ]
+
+    history = model.fit(x_train, y_train, epochs=100, validation_data=(x_test, y_test), callbacks=callbacks)
+    plot_history(history)
 
 if __name__ == "__main__":
     main()
