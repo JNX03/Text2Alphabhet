@@ -32,13 +32,13 @@ def create_model(input_shape, num_classes):
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
         MaxPooling2D((2, 2)),
-        Dropout(0.25),
+        Dropout(0.3),  # Adjusted dropout rate
         Conv2D(64, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
-        Dropout(0.25),
+        Dropout(0.3),  # Adjusted dropout rate
         Conv2D(128, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
-        Dropout(0.25),
+        Dropout(0.4),  # Adjusted dropout rate
         Flatten(),
         Dense(128, activation='relu'),
         Dropout(0.5),
@@ -46,6 +46,7 @@ def create_model(input_shape, num_classes):
     ])
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
+
 
 def plot_history(history):
     acc = history.history['accuracy']
@@ -84,7 +85,7 @@ def main():
         tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True, monitor='val_accuracy', mode='max')
     ]
 
-    history = model.fit(x_train, y_train, epochs=100, validation_data=(x_test, y_test), callbacks=callbacks)
+    history = model.fit(x_train, y_train, epochs=50, validation_data=(x_test, y_test), callbacks=callbacks)
     plot_history(history)
 
 if __name__ == "__main__":
