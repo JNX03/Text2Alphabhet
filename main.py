@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--audio_path', type=str, required=True, help='Path to the audio file to predict.')
     args = parser.parse_args()
 
-    model_path = 'best_model.h5'
+    model_path = 'alphabet_recognition_model.h5'
     audio_path = args.audio_path
 
     model = load_model(model_path)
